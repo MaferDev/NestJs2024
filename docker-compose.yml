@@ -1,0 +1,12 @@
+services:
+  postgres-user:
+    image: postgres:16
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:7
+    restart: unless-stopped
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
