@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
@@ -16,6 +17,9 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
+import { RoleAllowed } from 'src/app/core/decorator/role-allowed';
+import { User } from 'src/app/core/decorator/user';
+import { AuthGuard } from 'src/app/core/guard/api-guard';
 import { CrateUserResponseDto, CreateUserDto } from './user.dto';
 import { UsersEntity } from './user.entity';
 import { UserService } from './user.service';
@@ -32,6 +36,8 @@ import { UserService } from './user.service';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @UseGuards(AuthGuard)
+  @RoleAllowed('admin', 'user')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
     type: [CrateUserResponseDto],
@@ -40,7 +46,8 @@ export class UserController {
   @ApiOperation({ description: 'user fetch api ' })
   @ApiConsumes('application/json')
   @Get()
-  async findAll(): Promise<UsersEntity[]> {
+  async findAll(@User() user: any): Promise<UsersEntity[]> {
+    console.log(user);
     return await this.userService.fetchUsers();
   }
 

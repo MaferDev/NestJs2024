@@ -1,14 +1,46 @@
 import { DBModule } from '@dev/database';
-import { Module } from '@nestjs/common';
+import { Module, NestModule, RequestMethod } from '@nestjs/common';
+import { MiddlewareConsumer, RouteInfo } from '@nestjs/common/interfaces';
+import { AuthMiddleware } from '../core/middleware/auth.middleware';
+import { LoggerMiddleware } from '../core/middleware/log.middleware';
+import { UsersEntity } from './users/user.entity';
 import { UserModule } from './users/user.module';
+
+// useClass - to get a private instance of the options provider.
+// useFactory - to use a function as the options provider.
+// useExisting - to re-use an existing (shared, SINGLETON) service as the options provider.
+export const GLOBAL_PREFIX = '/api/v1';
+
 @Module({
   imports: [
     UserModule,
     DBModule.forRoot({
-      entities: [],
+      entities: [UsersEntity],
     }),
   ],
   controllers: [],
   providers: [],
 })
-export class DomainModule {}
+export class DomainModule implements NestModule {
+  public authRoutes: Array<RouteInfo> = [
+    {
+      path: `*`,
+      method: RequestMethod.ALL,
+    },
+  ];
+
+  public publicRoutes: Array<RouteInfo> = [
+    {
+      path: `${GLOBAL_PREFIX}/health`,
+      method: RequestMethod.GET,
+    },
+  ];
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(AuthMiddleware)
+      .exclude(...this.publicRoutes)
+      .forRoutes(...this.authRoutes);
+
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}
