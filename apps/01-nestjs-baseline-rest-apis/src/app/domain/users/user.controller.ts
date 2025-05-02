@@ -46,7 +46,7 @@ export class UserController {
   @ApiOperation({ description: 'user fetch api ' })
   @ApiConsumes('application/json')
   @Get()
-  async findAll(@User() user: any): Promise<UsersEntity[]> {
+  async findAll(@User() user: any): Promise<UsersEntity[] | undefined> {
     console.log(user);
     return await this.userService.fetchUsers();
   }
