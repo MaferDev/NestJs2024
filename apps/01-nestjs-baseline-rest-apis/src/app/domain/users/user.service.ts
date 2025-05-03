@@ -1,3 +1,4 @@
+import { HTTP_CLIENT_TOKEN, HttpClientService } from '@dev/http';
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm/repository/Repository';
@@ -12,10 +13,17 @@ export class UserService {
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
     @InjectRepository(UsersEntity) private userRepo: Repository<UsersEntity>,
+    @Inject(HTTP_CLIENT_TOKEN)
+    private readonly apiService: HttpClientService,
   ) {}
   async fetchUsers() {
     try {
       this.logger.log('Fetching all users');
+      try {
+        await this.apiService.fetch('get', {});
+      } catch (error) {
+        console.log('Error fetching users', error);
+      }
       return await this.userRepo.find({});
     } catch (error) {
       this.logger.error(error);

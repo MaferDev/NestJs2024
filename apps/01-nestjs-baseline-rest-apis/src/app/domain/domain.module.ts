@@ -1,6 +1,7 @@
 import { ConfigModule, ConfigService } from '@dev/config';
 import { DBModule } from '@dev/database';
 import { EmailModule } from '@dev/email';
+import { HttpClientModule } from '@dev/http';
 
 import { Module, NestModule, RequestMethod } from '@nestjs/common';
 import { MiddlewareConsumer, RouteInfo } from '@nestjs/common/interfaces';
@@ -17,6 +18,14 @@ export const GLOBAL_PREFIX = '/api/v1';
 
 @Module({
   imports: [
+    HttpClientModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        apiUrl: config.get().externalApi.apiUrl,
+        apiKey: config.get().externalApi.apiKey,
+      }),
+    }),
     EmailModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
